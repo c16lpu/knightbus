@@ -23,7 +23,7 @@ namespace KnightBus.Examples.Redis
 
         static async Task MainAsync()
         {
-            var redisConnection = "string";
+            var redisConnection = "localhost:6379";
 
             var multiplexer = ConnectionMultiplexer.Connect(redisConnection);
             //Initiate the client
