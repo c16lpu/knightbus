@@ -13,8 +13,7 @@ namespace KnightBus.ZeroMQ
             var socket = new RequestSocket(configuration.ConnectionString);
             TransportChannelFactories = new ITransportChannelFactory[]
             {
-                new RedisCommandChannelFactory(configuration, socket),
-                new RedisEventChannelFactory(configuration, socket),
+                new ZeroMQChannelFactory(configuration),
             };
         }
 

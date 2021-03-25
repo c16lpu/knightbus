@@ -19,7 +19,7 @@ namespace KnightBus.ZeroMQ
 
         public IChannelReceiver Create(Type messageType, IEventSubscription subscription, IProcessingSettings processingSettings, IHostConfiguration configuration, IMessageProcessor processor)
         {
-            var queueReaderType = typeof(StorageQueueChannelReceiver<>).MakeGenericType(messageType);
+            var queueReaderType = typeof(ZeroMQChannelReceiver<>).MakeGenericType(messageType);
             var queueReader = (IChannelReceiver)Activator.CreateInstance(queueReaderType, processingSettings, processor, configuration, Configuration);
             return queueReader;
         }

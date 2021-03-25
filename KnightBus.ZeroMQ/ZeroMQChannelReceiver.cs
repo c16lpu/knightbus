@@ -11,20 +11,15 @@ namespace KnightBus.ZeroMQ
     internal class ZeroMQChannelReceiver<T> : IChannelReceiver
         where T : class, IZeroMQCommand
     {
-        private IZeroMQQueueClient _ZeroMQQueueClient;
         private readonly IZeroMQConfiguration _zeroMQConfiguration;
         private readonly IMessageProcessor _processor;
         private readonly IHostConfiguration _hostConfiguration;
+        private IZeroMQConfiguration _storageOptions;
         public IProcessingSettings Settings { get; set; }
-        private StorageQueueMessagePump _messagePump;
+        
 
-
-        public StorageQueueChannelReceiver(IProcessingSettings settings, IMessageProcessor processor, IHostConfiguration hostConfiguration, IStorageBusConfiguration storageOptions)
+        public ZeroMQChannelReceiver(IProcessingSettings settings, IMessageProcessor processor, IHostConfiguration hostConfiguration, IZeroMQConfiguration storageOptions)
         {
-            if (settings.PrefetchCount > 32)
-                throw new ArgumentOutOfRangeException(nameof(settings),
-                    "PrefetchCount is set too high. The maximum number of messages that may be retrieved at a time is 32.");
-
             Settings = settings;
             _storageOptions = storageOptions;
             _processor = processor;
@@ -33,21 +28,21 @@ namespace KnightBus.ZeroMQ
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
+            //TODO: Lyssna efter meddelanden
             await Initialize().ConfigureAwait(false);
-            await _messagePump.StartAsync<T>(Handle, cancellationToken).ConfigureAwait(false);
+            
+            //Mappa inkommande meddelanden till en funktion som kan anropa _processor.ProcessAsync(....); Sen tar KB över
+            
         }
 
         private async Task Initialize()
         {
             var queueName = AutoMessageMapper.GetQueueName<T>();
-            _storageQueueClient = new StorageQueueClient(_storageOptions, null, queueName);
-            await _storageQueueClient.CreateIfNotExistsAsync().ConfigureAwait(false);
-            _messagePump = new StorageQueueMessagePump(_storageQueueClient, Settings, _hostConfiguration.Log);
         }
 
-        private async Task Handle(StorageQueueMessage message, CancellationToken cancellationToken)
+        private async Task Handle(ZeroMQMessage<T> message, CancellationToken cancellationToken)
         {
-            await _processor.ProcessAsync(new StorageQueueMessageStateHandler<T>(_storageQueueClient, message, Settings.DeadLetterDeliveryLimit, _hostConfiguration.DependencyInjection), cancellationToken).ConfigureAwait(false);
+            
         }
     }
 }
